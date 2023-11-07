@@ -1,0 +1,64 @@
+version: '3.8'
+
+networks:
+  my_network:
+    driver: bridge
+
+services:
+  user-db:
+    image: mysql:latest
+    environment:
+      MYSQL_ROOT_PASSWORD: 'admin'
+      MYSQL_DATABASE: 'user-db'
+    ports:
+      - "3308:3306"
+    volumes:
+      - user-volume:/var/lib/mysql
+    networks:
+      - my_network
+
+  device-db:
+    image: mysql:latest
+    environment:
+      MYSQL_ROOT_PASSWORD: 'admin'
+      MYSQL_DATABASE: 'device-db'
+    ports:
+      - "3307:3306" 
+    volumes:
+      - device-volume:/var/lib/mysql
+    networks:
+      - my_network
+
+  device-backend:
+    image: device-backend
+    ports:
+      - "8081:8081"
+    environment:
+      - MYSQL_HOST=device-db
+    depends_on:
+      - device-db
+    networks:
+      - my_network
+
+  user-backend:
+    image: user-backend
+    ports:
+      - "8080:8080"
+    environment:
+      - MYSQL_HOST=user-db
+      - DEVICE_BACKEND_IP=device-backend
+      - DEVICE_BACKEND_PORT=8081
+    depends_on:
+      - user-db
+    networks:
+      - my_network
+    
+  react-frontend:
+    image: front-image
+    ports:
+      - "3000:80"
+  
+volumes:
+  user-volume:
+  device-volume:
+
