@@ -209,4 +209,147 @@ Comanda `docker-compose up --build -d` este folosită pentru a construi și rula
 - `-d`: Această opțiune pornește containerele în modul detach (adică în fundal), astfel încât să poți continua să folosești terminalul în timp ce containerele rulează. 
 
 
+# CSVReader Documentation
+
+## Overview
+
+The `CSVReader` class is a Java program designed to read sensor data from a CSV file, convert it into a JSON format, and then publish it to a RabbitMQ message queue. This documentation provides an overview of the package and explains how to use the `CSVReader` class.
+
+## Package Information
+
+- **Package Name:** org.example
+- **Main Class:** CSVReader
+
+## Dependencies
+
+- **RabbitMQ Java Client Library:** This package relies on the RabbitMQ Java client library to establish a connection to a RabbitMQ server and publish messages to a queue.
+
+## Usage
+
+### Prerequisites
+
+Before using the `CSVReader` class, ensure the following prerequisites are met:
+
+1. **RabbitMQ Server:** A running RabbitMQ server is required to establish a connection and publish messages. The RabbitMQ server URI should be configured in the `setUri` method of the `ConnectionFactory` instance.
+
+2. **CSV File:** The program expects a CSV file named "sensor.csv" to be present in the same directory as the program. This file should contain numeric values representing sensor measurements.
+
+# MonitoringService Class Documentation
+
+The `MonitoringService` class is a crucial component of the monitoring microservice, responsible for handling incoming sensor measurements, processing data, and notifying users through WebSocket communication. Below is a detailed documentation of the key functionalities and methods within this class.
+
+## Properties
+
+- `measurementsMap`: A map that stores measurements for each device identified by a unique UUID.
+- `messagingTemplate`: An instance of `SimpMessagingTemplate` used for sending messages to WebSocket destinations.
+- `monitoringRepo`: An instance of the `MonitoringRepo` class, which provides data access methods for interacting with the database.
+
+## Constructor
+
+### `public MonitoringService(MonitoringRepo monitoringRepo)`
+
+- Initializes the `MonitoringService` with a provided instance of `MonitoringRepo`.
+- Assigns the provided `monitoringRepo` to the local property.
+
+## Methods
+
+### `public void receiveMessage(String message) throws JsonProcessingException`
+
+- Listens to the "measurements" RabbitMQ queue for incoming messages.
+- Deserializes the received JSON message to extract measurement information such as value, timestamp, and device ID.
+- Updates the `measurementsMap` with the latest measurement value for the corresponding device.
+- Saves the measurement information to the database using the `MonitoringRepo`.
+- Checks if the measurement exceeds the maximum energy consumption limit and sends a notification to the user via WebSocket.
+- Calculates and sends the median value of the last six measurements to the WebSocket topic "/topic/monitoring/".
+
+### `private double calculateMedian(List<Double> values, UUID deviceID)`
+
+- Calculates the median of the first six values in the provided list.
+- If there are fewer than six values, a default value of 0.0 is returned.
+- Removes the first six values from the original list and updates the `measurementsMap`.
+- Returns the calculated median value.
+
+### `private void notifyUI(String topic, UUID userID, String message)`
+
+- Sends a message to the specified WebSocket destination.
+- The destination is constructed by combining the `topic` and the `userID`.
+- Uses the `messagingTemplate` to convert and send the message to the WebSocket destination.
+
+This `MonitoringService` class plays a crucial role in processing real-time sensor data, storing information in the database, and notifying users of relevant events through WebSocket communication.
+
+# MaxConsumptionService Class Documentation
+
+The `MaxConsumptionService` class is an essential component of the monitoring microservice, responsible for handling messages related to maximum energy consumption values. This class allows users to insert or delete maximum consumption records based on the received messages. Below is a detailed documentation of the key functionalities and methods within this class.
+
+## Properties
+
+- `maxConsumptionRepo`: An instance of the `MaxConsumptionRepo` class, which provides data access methods for interacting with the database.
+
+## Constructor
+
+### `public MaxConsumptionService(MaxConsumptionRepo maxConsumptionRepo)`
+
+- Initializes the `MaxConsumptionService` with a provided instance of `MaxConsumptionRepo`.
+- Assigns the provided `maxConsumptionRepo` to the local property.
+
+## Methods
+
+### `@Transactional @RabbitListener(queues = "consumption") public void receiveMessage(String message) throws JsonProcessingException`
+
+- Listens to the "consumption" RabbitMQ queue for incoming messages related to maximum energy consumption.
+- Deserializes the received JSON message to extract information such as the operation type, device ID, energy value, and user ID.
+- Performs the corresponding database operation based on the operation type:
+  - **DELETE**: Deletes the maximum consumption record with the specified device ID.
+  - **INSERT**: Inserts a new maximum consumption record with the provided device ID, energy value, and user ID.
+- Prints a message to the console if the operation type is not recognized.
+
+This `MaxConsumptionService` class is crucial for managing maximum energy consumption records, allowing users to dynamically update these records based on incoming messages.
+
+# WebSocket Configuration
+
+The `WebSocketConfig` class is a part of the `com.example.monitoring.websocket` package and is responsible for configuring WebSocket communication in a Spring Boot application. This configuration is commonly used for enabling WebSocket support in combination with the Spring framework and can be particularly useful for real-time communication in web applications.
+
+## Configuration Details
+
+### `@Configuration` Annotation
+
+This annotation indicates that the class contains bean definitions that should be processed by the Spring container.
+
+### `@EnableWebSocketMessageBroker` Annotation
+
+This annotation enables WebSocket message handling, allowing the configuration of a message broker to be used for routing messages between clients.
+
+### `WebSocketMessageBrokerConfigurer` Interface
+
+This interface provides methods to configure WebSocket message handling.
+
+#### `configureMessageBroker` Method
+
+This method is used to configure the message broker. In this case, it enables a simple in-memory message broker to carry messages back to the client with destination prefixes "/topic" and "/app."
+
+- `config.enableSimpleBroker("/topic")`: Enables a simple message broker with the specified destination prefix.
+- `config.setApplicationDestinationPrefixes("/app")`: Defines the prefix for messages that are bound for methods annotated with `@MessageMapping`.
+
+#### `registerStompEndpoints` Method
+
+This method is used to register STOMP (Simple Text Oriented Messaging Protocol) endpoints, allowing clients to connect to the WebSocket.
+
+- `registry.addEndpoint("/ws")`: Registers the "/ws" endpoint that clients can use to connect to the WebSocket.
+- `.setAllowedOrigins("http://localhost:3000")`: Specifies the origins that are allowed to connect to this WebSocket. Replace "http://localhost:3000" with the origin of your React application.
+- `.withSockJS()`: Enables SockJS fallback options for browsers that do not support WebSocket.
+
+## Usage
+
+1. Annotate your main application class with `@SpringBootApplication` to enable Spring Boot features.
+
+2. Make sure to have the necessary dependencies, such as Spring Boot Starter Web and Spring Boot Starter WebSocket.
+
+3. Create a `WebSocketConfig` bean by either placing it in the same package as your main class or using the `@ComponentScan` annotation to scan the package.
+
+4. Now, your Spring Boot application is configured to support WebSocket communication with the specified endpoint and message broker.
+
+
+
+# Diagrama de deploy
+
 ![Alt text](docker.png)
