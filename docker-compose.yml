@@ -29,6 +29,18 @@ services:
     networks:
       - my_network
 
+  monitoring-db:
+    image: mysql:latest
+    environment:
+      MYSQL_ROOT_PASSWORD: 'admin'
+      MYSQL_DATABASE: 'monitoring-db'
+    ports:
+      - "3309:3306"
+    volumes:
+      - monitoring-volume:/var/lib/mysql
+    networks:
+      - my_network
+
   device-backend:
     image: device-backend
     ports:
@@ -52,6 +64,17 @@ services:
       - user-db
     networks:
       - my_network
+
+  monitoring-backend:
+    image: monitoring-backend
+    ports:
+      - "8082:8082"
+    environment:
+      - MYSQL_HOST=monitoring-db
+    depends_on:
+      - monitoring-db
+    networks:
+      - my_network
     
   react-frontend:
     image: front-image
@@ -61,4 +84,6 @@ services:
 volumes:
   user-volume:
   device-volume:
+  monitoring-volume:
+
 
