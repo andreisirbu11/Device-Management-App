@@ -352,4 +352,4 @@ This method is used to register STOMP (Simple Text Oriented Messaging Protocol) 
 
 # Diagrama de deploy
 
-![Alt text](docker.png)
+![Alt text](docker.jpg)
