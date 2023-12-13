@@ -1,0 +1,50 @@
+/* Update notification styles to match the rest of the page */
+
+.notification-stack {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  max-width: 300px;
+}
+
+.notification {
+  position: relative;
+  background-color: #800000; /* Updated to a darker red color */
+  color: #fff; /* White text color */
+  padding: 15px;
+  margin: 10px 0;
+  border-radius: 5px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5); /* Darker box shadow */
+  opacity: 1;
+  transition: opacity 0.5s ease-in-out;
+}
+
+.notification-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.notification-message {
+  flex: 1;
+}
+
+.notification-close {
+  cursor: pointer;
+  color: #fff; /* White text color */
+}
+
+/* Add hover effect (optional) */
+.notification:hover {
+  opacity: 0.8;
+}
+
+/* Add fade-out animation for removing notifications */
+@keyframes fadeOut {
+  0% { opacity: 1; }
+  100% { opacity: 0; }
+}
+
+.notification.removing {
+  animation: fadeOut 0.5s ease-in-out;
+}

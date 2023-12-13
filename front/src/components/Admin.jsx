@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import './Admin.css'
+import './Admin.css';
+import Chat from './Chat';
 
 const Admin = () => {
   const [users, setUsers] = useState([]);
@@ -11,29 +12,67 @@ const Admin = () => {
   const [selectedUser, setSelectedUser] = useState(null);
   const [selectedDevice, setSelectedDevice] = useState(null);
 
+  const [isEnergyInputDisabled, setIsEnergyInputDisabled] = useState(false);
+  const [isUserIDInputDisabled, setIsUserIDInputDisabled] = useState(false);
+
+  const [selectedChatUsers, setSelectedChatUsers] = useState([]);
+  // Read the token from session storage
+  const token = sessionStorage.getItem('token');
+
   useEffect(() => {
-    fetch('http://localhost:8080/user')
+    // Fetch users and devices using the token
+    if (token) {
+      fetch('http://localhost:8080/user', {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      })
       .then((response) => response.json())
       .then((data) => setUsers(data))
       .catch((error) => console.error('Error:', error));
 
-    fetch('http://localhost:8081/device')
+    fetch('http://localhost:8081/device', {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+    })
       .then((response) => response.json())
       .then((data) => setDevices(data))
       .catch((error) => console.error('Error:', error));
+    }
   }, []);
+
+  const handleSelectUserForChat = (user) => {
+    // Check if the user is already selected
+    if (!selectedChatUsers.find((selectedUser) => selectedUser.id === user.id)) {
+      setSelectedChatUsers([...selectedChatUsers, user]);
+    }
+  };  
+
+  const handleCloseChat = (userId) => {
+    setSelectedChatUsers(selectedChatUsers.filter((user) => user.id !== userId));
+  };
 
   const handleUserSubmit = (e) => {
     e.preventDefault();
 
-    if (selectedUser) {
+    if (selectedUser && token) {
       // Update existing user
-      fetch(`http://localhost:8080/user/${selectedUser.id}`, {
+      const newUser = {
+        username: newUserData.username,
+        password: newUserData.password,
+        userRole: newUserData.userRole
+      }
+      console.log(newUser);
+      fetch(`http://localhost:8080/user/edit/${selectedUser.id}`, {
         method: 'PUT',
         headers: {
+          Authorization: `Bearer ${token}`,
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(newUserData),
+        body: JSON.stringify(newUser),
       })
         .then((response) => response.json())
         .then((data) => {
@@ -47,6 +86,7 @@ const Admin = () => {
       fetch('http://localhost:8080/user', {
         method: 'POST',
         headers: {
+          Authorization: `Bearer ${token}`,
           'Content-Type': 'application/json',
         },
         body: JSON.stringify(newUserData),
@@ -61,11 +101,15 @@ const Admin = () => {
   const handleDeviceSubmit = (e) => {
     e.preventDefault();
 
-    if (selectedDevice) {
+    if (selectedDevice && token) {
       // Update existing device
+      setIsEnergyInputDisabled(false);
+      setIsUserIDInputDisabled(false);
+
       fetch(`http://localhost:8081/device/${selectedDevice.id}`, {
         method: 'PUT',
         headers: {
+          Authorization: `Bearer ${token}`,
           'Content-Type': 'application/json',
         },
         body: JSON.stringify(newDeviceData),
@@ -82,6 +126,7 @@ const Admin = () => {
       fetch(`http://localhost:8081/device/user/${newDeviceData.user_id}`, {
         method: 'POST',
         headers: {
+          Authorization: `Bearer ${token}`,
           'Content-Type': 'application/json',
         },
         body: JSON.stringify(newDeviceData),
@@ -99,31 +144,45 @@ const Admin = () => {
   };
 
   const editDevice = (device) => {
+    setIsEnergyInputDisabled(true);
+    setIsUserIDInputDisabled(true);
     setSelectedDevice(device);
     setNewDeviceData({...device });
   };
 
   const deleteUser = (userId) => {
-    fetch(`http://localhost:8080/user/${userId}`, {
-      method: 'DELETE',
-    })
+    if(token) {
+      fetch(`http://localhost:8080/user/${userId}`, {
+        method: 'DELETE',
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      })
       .then(() => setUsers(users.filter((user) => user.id !== userId)))
       .catch((error) => console.error('Error:', error));
+    }
   };
 
   const deleteDevice = (deviceId) => {
-    fetch(`http://localhost:8081/device/${deviceId}`, {
-      method: 'DELETE',
-    })
+    if(token) {
+      fetch(`http://localhost:8081/device/${deviceId}`, {
+        method: 'DELETE',
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      })
       .then(() => setDevices(devices.filter((device) => device.id !== deviceId)))
       .catch((error) => console.error('Error:', error));
+    }
   };
   
   return (
     <div>
       <h2>Admin Dashboard</h2>
 
-      <div>
+      <div className='container'>
         <h3>Users</h3>
         <form onSubmit={handleUserSubmit}>
           <input
@@ -144,21 +203,36 @@ const Admin = () => {
             value={newUserData.userRole}
             onChange={(e) => setNewUserData({ ...newUserData, userRole: e.target.value })}
           />
-          <button type="submit">{selectedUser ? 'Update User' : 'Add User'}</button>
+          <button className='blue-button' type="submit">{selectedUser ? 'Update User' : 'Add User'}</button>
         </form>
 
-        <ul>
+        <table>
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Username</th>
+              <th>Role</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody>
           {users.map((user) => (
-            <li key={user.id}>
-              Id: {user.id}, Username: {user.username}, Role: {user.userRole}{' '}
-              <button onClick={() => editUser(user)}>Edit</button>{' '}
-              <button onClick={() => deleteUser(user.id)}>Delete</button>
-            </li>
+            <tr key={user.id}>
+              <td>{user.id}</td>
+              <td>{user.username}</td>
+              <td>{user.userRole}</td>
+              <td>
+                <button className='red-button' onClick={() => editUser(user)}>Edit</button>{' '}
+                <button className='red-button' onClick={() => deleteUser(user.id)}>Delete</button>
+                { user.userRole === 'user' && <button className='blue-button' onClick={() => handleSelectUserForChat(user)}>Chat</button> }
+              </td>
+            </tr>
           ))}
-        </ul>
+          </tbody>
+        </table>
       </div>
 
-      <div>
+      <div className='container'>
         <h3>Devices</h3>
         <form onSubmit={handleDeviceSubmit}>
           <input
@@ -176,27 +250,55 @@ const Admin = () => {
           <input
             type="text"
             placeholder="Energy"
+            disabled = {isEnergyInputDisabled}
             value={newDeviceData.energy}
             onChange={(e) => setNewDeviceData({ ...newDeviceData, energy: e.target.value })}
           />
           <input
             type="text"
             placeholder="User ID"
+            disabled = {isUserIDInputDisabled}
             value={newDeviceData.user_id || ''}
             onChange={(e) => setNewDeviceData({ ...newDeviceData, user_id: e.target.value })}
           />
-          <button type="submit">{selectedDevice ? 'Update Device' : 'Add Device'}</button>
+          <button className='blue-button' type="submit">{selectedDevice ? 'Update Device' : 'Add Device'}</button>
         </form>
 
-        <ul>
-          {devices.map((device) => (
-            <li key={device.id}>
-              Id: {device.id}, Description: {device.description}, Address: {device.address}, Energy: {device.energy}, User Id: {device.user_id}{' '}
-              <button onClick={() => editDevice(device)}>Edit</button>{' '}
-              <button onClick={() => deleteDevice(device.id)}>Delete</button>
-            </li>
-          ))}
-        </ul>
+        <table>
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Description</th>
+              <th>Address</th>
+              <th>Energy</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            {devices.map((device) => (
+              <tr key={device.id}>
+                <td>{device.id}</td>
+                <td>{device.description}</td>
+                <td>{device.address}</td>
+                <td>{device.energy}</td>
+                <td>
+                  <button className='red-button' onClick={() => editDevice(device)}>Edit</button>{' '}
+                  <button className='red-button' onClick={() => deleteDevice(device.id)}>Delete</button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+        {/* Render multiple chat windows */}
+        {selectedChatUsers.map((user) => (
+          <Chat 
+            key={user.id}
+            onClose={() => handleCloseChat(user.id)}
+            title={user.username}
+            userId={user.id}
+            name={'admin'}
+          />
+        ))}
       </div>
     </div>
   );

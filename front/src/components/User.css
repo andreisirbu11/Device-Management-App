@@ -1,40 +1,63 @@
+.user-heading {
+  font-size: 1.5em;
+  margin-bottom: 20px;
+  color: #fff; /* Light text color */
+  text-align: center;
+}
+
+.user-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.user-table th, .user-table td {
+  padding: 10px;
+  border: 1px solid #555; /* Darker border color */
+  color: #fff; /* Light text color */
+}
+
+.user-table td {
+  text-align: center;
+}
+
+.user-table tr:nth-child(even) {
+  background-color: #444; /* Darker background color */
+}
+
+.user-table tr:hover {
+  background-color: #333; /* Even darker background color on hover */
+}
+
 .user-container {
-    max-width: 800px;
-    margin: 0 auto;
-    padding: 20px;
-    background-color: #f9f9f9;
-    border-radius: 8px;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-  }
-  
-  .user-heading {
-    font-size: 1.5em;
-    margin-bottom: 10px;
-    color: #333; /* Dark text color */
-  }
-  
-  .user-table {
-    width: 100%;
-    border-collapse: collapse;
-  }
-  
-  .user-table th, .user-table td {
-    padding: 10px;
-    border: 1px solid #ccc;
-  }
-  
-  .user-table th {
-    background-color: #f0f0f0;
-  }
-  
-  .user-table td {
-    text-align: center;
-  }
-  
-  .user-table tr:nth-child(even) {
-    background-color: #f9f9f9;
-  }
-  
-  .user-table tr:hover {
-    background-color: #e0e0e0;
-  }
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 20px;
+  background-color: #333; /* Darker background color */
+  border-radius: 8px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.5); /* Darker box shadow */
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+
+.support-container {
+  display: flex;
+  justify-content: center;
+  background-color: #222; /* Dark background color */
+  padding: 20px;
+  box-sizing: border-box;
+}
+
+.chat-button {
+  background-color: #800000; /* Darker red color */
+  color: #fff;
+  padding: 10px 20px;
+  border: none;
+  cursor: pointer;
+  border-radius: 4px;
+  transition: background-color 0.3s ease;
+}
+
+.chat-button:hover {
+  background-color: #660000; /* Even darker red color on hover */
+}

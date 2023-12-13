@@ -5,45 +5,53 @@ import './LogIn.css';
 const LogIn = () => {
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
-    const [users, setUsers] = useState([]);
     const navigate = useNavigate();
-    let foundUser;
-
-    useEffect(() => {
-        fetch('http://localhost:8080/user')
-          .then((response) => response.json())
-          .then((data) => setUsers(data))
-          .catch((error) => console.error('Error:', error));
-    }, []);
-
-    const checkUserCredentials = (username, password, users) => {
-        for (const user of users) {
-          if (user.username === username && user.password === password) {
-            foundUser = user;
-            return true; 
-          }
-        }
-        return false; 
-      };
       
     const handleSubmit = (e) => {
         e.preventDefault();
-        let verify = checkUserCredentials(username, password, users);
-        if(verify === true) {
-            if(foundUser.userRole === 'user') {
-                navigate(`/user/${foundUser.id}`);
-            }
-            else if(foundUser.userRole === 'admin') {
-                navigate('/admin');
-            }
-            else {
-                // userul nu are nici un role
-                navigate('/');
-            }
+
+        const user = {
+            "username": username,
+            "password": password
         }
-        else {
-            alert('No user found');
-        }
+        
+        const authenticateUser = async () => {
+            try {
+                const response = await fetch('http://localhost:8080/security/authenticate', {
+                    method: 'POST',
+                    headers: {
+                    'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(user),
+                });
+            
+                if (!response.ok) {
+                    throw new Error(`HTTP error! Status: ${response.status}`);
+                }
+          
+                const data = await response.json();
+                if(data) {
+                    // Save the token in session storage
+                    sessionStorage.setItem('token', data.token);
+                    if(data.role === 'user') {
+                        navigate(`/user/${username}/${data.id}`);
+                    }
+                    else if(data.role === 'admin') {
+                        navigate('/admin');
+                    }
+                    else {
+                        alert('User has no authorization');
+                    }
+                }
+            } catch (error) {
+              console.error('Error:', error);
+              // Handle the error as needed
+              alert('User not found');
+            }
+          };
+          
+          // Call the function to authenticate the user
+          authenticateUser();          
     };
 
     return (
@@ -54,11 +62,9 @@ const LogIn = () => {
                 <input className="login-input" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="password" type="password" />
                 <button className="login-button" onClick={handleSubmit}>Submit</button>
             </div>
-            <div className="login-footer">
-                <a href="">If you don't have an account already, sign up here!</a>
-            </div>
         </div>
     )
 }
 
 export default LogIn
+
