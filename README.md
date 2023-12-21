@@ -14,17 +14,15 @@ Cuprins
 
  
 
-Introducere……………………………………………………………. 
+Introducere……………………………………………………….
 
-Implementare……………………………………………………….. 
 
-Microservicii,Docker……………………………………………… 
+Implementare…………………………………………………….
+
+Microservicii,Docker……………………………….
 
 Diagrame………………………………………………………………. 
 
-Bibliografie……………………………………………………………. 
-
- 
 
 Introducere  
 
@@ -176,37 +174,7 @@ Pe de altă parte, există și dezavantaje asociate cu utilizarea microserviciil
 
   
 
-În concluzie, microserviciile oferă flexibilitate și scalabilitate, dar impun și provocări de gestionare și coordonare. Decizia de a utiliza microservicii trebuie să țină cont de specificul proiectului și de capacitățile echipei de dezvoltare. 
-
- 
-
-Docker 
-
- 
-
-Crearea imaginilor se face utilizand comenzile: 
-
-	-docker build –t user-backend . 
-
-	-docker build –t device-backend . 
-
-	-docker build –t image-backend . 
-
- 
-
-Comanda `docker-compose up --build -d` este folosită pentru a construi și rula containerele specificate în fișierul `docker-compose.yml` în mod detaliat. Iată ce fac fiecare parte a comenzii: 
-
-  
-
-- `docker-compose up`: Această parte a comenzii rulează containerele specificate în fișierul `docker-compose.yml`. Dacă containerele nu există, Docker va încerca să le creeze. 
-
-  
-
-- `--build`: Această opțiune specifică ca Docker să refacă imaginile Docker ale serviciilor din fișierul `docker-compose.yml`. Acest lucru este util atunci când s-au făcut modificări la codul sursă sau configurările serviciilor. 
-
-  
-
-- `-d`: Această opțiune pornește containerele în modul detach (adică în fundal), astfel încât să poți continua să folosești terminalul în timp ce containerele rulează. 
+În concluzie, microserviciile oferă flexibilitate și scalabilitate, dar impun și provocări de gestionare și coordonare. Decizia de a utiliza microservicii trebuie să țină cont de specificul proiectului și de capacitățile echipei de dezvoltare.  
 
 
 # CSVReader Documentation
@@ -239,6 +207,7 @@ Before using the `CSVReader` class, ensure the following prerequisites are met:
 The `MonitoringService` class is a crucial component of the monitoring microservice, responsible for handling incoming sensor measurements, processing data, and notifying users through WebSocket communication. Below is a detailed documentation of the key functionalities and methods within this class.
 
 ## Properties
+
 
 - `measurementsMap`: A map that stores measurements for each device identified by a unique UUID.
 - `messagingTemplate`: An instance of `SimpMessagingTemplate` used for sending messages to WebSocket destinations.
@@ -348,7 +317,37 @@ This method is used to register STOMP (Simple Text Oriented Messaging Protocol) 
 
 4. Now, your Spring Boot application is configured to support WebSocket communication with the specified endpoint and message broker.
 
+Docker 
 
+ 
+
+Crearea imaginilor se face utilizand comenzile: 
+
+	-docker build –t user-backend . 
+
+	-docker build –t device-backend . 
+
+	-docker build –t image-backend . 
+
+ 
+
+Comanda `docker-compose up --build -d` este folosită pentru a construi și rula containerele specificate în fișierul `docker-compose.yml` în mod detaliat. Iată ce fac fiecare parte a comenzii: 
+
+  
+
+- `docker-compose up`: Această parte a comenzii rulează containerele specificate în fișierul `docker-compose.yml`. Dacă containerele nu există, Docker va încerca să le creeze. 
+
+  
+
+- `--build`: Această opțiune specifică ca Docker să refacă imaginile Docker ale serviciilor din fișierul `docker-compose.yml`. Acest lucru este util atunci când s-au făcut modificări la codul sursă sau configurările serviciilor. 
+
+  
+
+- `-d`: Această opțiune pornește containerele în modul detach (adică în fundal), astfel încât să poți continua să folosești terminalul în timp ce containerele rulează.
+
+# Diagrama conceptuala
+
+![Alt text](conceptual.png)
 
 # Diagrama de deploy
 
